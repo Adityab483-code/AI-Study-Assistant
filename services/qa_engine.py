@@ -1,25 +1,47 @@
 from utils.gemini import model
 
 
-def answer_question(
-    notes: str,
-    question: str
-) -> str:
+def answer_question(notes, question):
+    try:
 
-    prompt = f"""
-    Notes:
+        question_words = set(
+            question.lower().split()
+        )
 
-    {notes}
+        notes_words = set(
+            notes.lower().split()
+        )
 
-    Question:
+        matches = len(
+            question_words.intersection(notes_words)
+        )
 
-    {question}
+        if matches == 0:
+            return (
+                "Information not available "
+                "in uploaded notes."
+            )
 
-    Answer only from the notes.
-    If not found, say:
-    "Information not available in notes."
-    """
+        prompt = f"""
+Answer ONLY using the notes below.
 
-    response = model.generate_content(prompt)
+If the answer is not present,
+reply exactly:
 
-    return response.text
+Information not available in uploaded notes.
+
+NOTES:
+{notes[:15000]}
+
+QUESTION:
+{question}
+"""
+
+        response = model.generate_content(
+            prompt
+        )
+
+        return response.text.strip()
+
+    except Exception as e:
+        return f"Error: {e}"
