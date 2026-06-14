@@ -9,7 +9,9 @@ from services.rag_engine import (
     create_vector_store,
     retrieve_context
 )
-
+from utils.llm import (
+    generate_response
+)
 
 def answer_question(
     pdf_file,
@@ -53,16 +55,9 @@ QUESTION:
 {question}
 """
 
-        response = (
-            model.generate_content(
-                prompt
-            )
-        )
-
-        return (
-            f"{response.text}\n\n"
-            f"Source Pages: {source_pages}"
-        )
+        return generate_response(
+    prompt
+)
 
     except Exception as e:
 

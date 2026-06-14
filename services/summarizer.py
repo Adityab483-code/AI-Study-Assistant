@@ -1,4 +1,4 @@
-from utils.gemini import model
+from utils.llm import generate_response
 
 
 def generate_summary(notes):
@@ -10,6 +10,6 @@ def generate_summary(notes):
     {notes}
     """
 
-    response = model.generate_content(prompt)
-
-    return response.text
+    return generate_response(
+    prompt
+)
