@@ -1,5 +1,7 @@
 from utils.gemini import model
-
+from utils.llm import (
+    generate_response
+)
 
 def generate_quiz(notes):
     try:
@@ -27,11 +29,9 @@ NOTES:
 {notes[:15000]}
 """
 
-        response = model.generate_content(
-            prompt
-        )
-
-        return response.text
+        return generate_response(
+    prompt
+)
 
     except Exception as e:
         return f"Error: {e}"
