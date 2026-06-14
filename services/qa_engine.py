@@ -1,47 +1,69 @@
 from utils.gemini import model
 
+from services.pdf_reader import (
+    extract_pages
+)
 
-def answer_question(notes, question):
+from services.rag_engine import (
+    create_chunks,
+    create_vector_store,
+    retrieve_context
+)
+
+
+def answer_question(
+    pdf_file,
+    question
+):
+
     try:
 
-        question_words = set(
-            question.lower().split()
+        pages = extract_pages(
+            pdf_file
         )
 
-        notes_words = set(
-            notes.lower().split()
+        chunks = create_chunks(
+            pages
         )
 
-        matches = len(
-            question_words.intersection(notes_words)
+        index = create_vector_store(
+            chunks
         )
 
-        if matches == 0:
-            return (
-                "Information not available "
-                "in uploaded notes."
+        context, source_pages = (
+            retrieve_context(
+                question,
+                chunks,
+                index
             )
+        )
 
         prompt = f"""
-Answer ONLY using the notes below.
+Answer ONLY from the context.
 
-If the answer is not present,
-reply exactly:
+If answer is unavailable,
+say:
 
-Information not available in uploaded notes.
+Information not found in notes.
 
-NOTES:
-{notes[:15000]}
+CONTEXT:
+{context}
 
 QUESTION:
 {question}
 """
 
-        response = model.generate_content(
-            prompt
+        response = (
+            model.generate_content(
+                prompt
+            )
         )
 
-        return response.text.strip()
+        return (
+            f"{response.text}\n\n"
+            f"Source Pages: {source_pages}"
+        )
 
     except Exception as e:
+
         return f"Error: {e}"
