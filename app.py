@@ -114,6 +114,14 @@ if uploaded_file:
         st.write(
             notes[:5000]
         )
+    search_mode = st.radio(
+        "Search Mode",
+        [
+            "🚀 Hybrid",
+            "📄 PDF Only",
+            "🌐 Web Only"
+        ],
+        horizontal=True)
 
     tab1, tab2, tab3 = st.tabs(
         [
