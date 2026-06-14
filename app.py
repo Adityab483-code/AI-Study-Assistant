@@ -49,15 +49,17 @@ with st.sidebar:
 
 ✅ Smart Summary
 
-✅ Question Answering
+✅ RAG-Based Question Answering
 
 ✅ Quiz Generation
+
+✅ Page Citations
 """)
 
 st.title("🤖 AI Study Assistant")
 
 st.markdown("""
-### Personalized Study Assistant Using Generative AI
+### Personalized Learning Using Generative AI + RAG
 
 Upload your notes and let AI help you study smarter.
 """)
@@ -73,26 +75,45 @@ if uploaded_file:
         notes = extract_text(uploaded_file)
 
     if not notes:
-        st.error("No text found in PDF.")
+
+        st.error(
+            "No text found in PDF."
+        )
+
         st.stop()
 
-    st.success("PDF Uploaded Successfully 🎉")
+    st.success(
+        "PDF Uploaded Successfully 🎉"
+    )
 
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.metric("AI Model", "Gemini")
+        st.metric(
+            "AI Model",
+            "Gemini"
+        )
 
     with col2:
-        st.metric("Status", "Online")
+        st.metric(
+            "Search",
+            "RAG"
+        )
 
     with col3:
-        st.metric("Words Extracted", len(notes.split()))
+        st.metric(
+            "Words Extracted",
+            len(notes.split())
+        )
 
     st.markdown("---")
 
-    with st.expander("📖 View Extracted Notes"):
-        st.write(notes[:5000])
+    with st.expander(
+        "📖 View Extracted Notes"
+    ):
+        st.write(
+            notes[:5000]
+        )
 
     tab1, tab2, tab3 = st.tabs(
         [
@@ -104,12 +125,21 @@ if uploaded_file:
 
     with tab1:
 
-        if st.button("🚀 Generate Summary"):
+        if st.button(
+            "🚀 Generate Summary"
+        ):
 
-            with st.spinner("Generating Summary..."):
-                summary = generate_summary(notes)
+            with st.spinner(
+                "Generating Summary..."
+            ):
 
-            st.write(summary)
+                summary = generate_summary(
+                    notes
+                )
+
+            st.write(
+                summary
+            )
 
             st.download_button(
                 "📥 Download Summary",
@@ -123,31 +153,48 @@ if uploaded_file:
             "Ask a question from your notes"
         )
 
-        if st.button("🤖 Get Answer"):
+        if st.button(
+            "🤖 Get Answer"
+        ):
 
             if question:
 
-                with st.spinner("Thinking..."):
+                with st.spinner(
+                    "Searching Notes..."
+                ):
+
                     answer = answer_question(
-                        notes,
+                        uploaded_file,
                         question
                     )
 
-                st.write(answer)
+                st.write(
+                    answer
+                )
 
             else:
+
                 st.warning(
                     "Please enter a question."
                 )
 
     with tab3:
 
-        if st.button("📚 Generate Quiz"):
+        if st.button(
+            "📚 Generate Quiz"
+        ):
 
-            with st.spinner("Creating Quiz..."):
-                quiz = generate_quiz(notes)
+            with st.spinner(
+                "Creating Quiz..."
+            ):
 
-            st.write(quiz)
+                quiz = generate_quiz(
+                    notes
+                )
+
+            st.write(
+                quiz
+            )
 
             st.download_button(
                 "📥 Download Quiz",
@@ -157,4 +204,12 @@ if uploaded_file:
 
 else:
 
-    st.info("Upload a PDF to begin.")
+    st.info(
+        "Upload a PDF to begin."
+    )
+
+st.markdown("---")
+
+st.caption(
+    "Developed by Himanshu Rawat | AI Study Assistant"
+)
