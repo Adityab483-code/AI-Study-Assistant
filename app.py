@@ -173,7 +173,7 @@ if uploaded_file:
 
                     answer = answer_question(
                         uploaded_file,
-                        question
+                        question,search_mode
                     )
 
                 st.write(

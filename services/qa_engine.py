@@ -1,5 +1,3 @@
-from utils.gemini import model
-
 from services.pdf_reader import (
     extract_pages
 )
@@ -9,13 +7,20 @@ from services.rag_engine import (
     create_vector_store,
     retrieve_context
 )
+
+from services.web_search import (
+    web_search
+)
+
 from utils.llm import (
     generate_response
 )
 
+
 def answer_question(
     pdf_file,
-    question
+    question,
+    search_mode
 ):
 
     try:
@@ -40,11 +45,43 @@ def answer_question(
             )
         )
 
+        print(
+            "MODE:",
+            search_mode
+        )
+
+        if search_mode == "🌐 Web Only":
+
+            results = web_search(
+                question
+            )
+
+            web_context = "\n".join(
+                [
+                    f"{item['title']}\n{item['body']}"
+                    for item in results
+                ]
+            )
+
+            prompt = f"""
+Answer the question using the web search results.
+
+QUESTION:
+{question}
+
+WEB RESULTS:
+{web_context}
+"""
+
+            return generate_response(
+                prompt
+            )
+
         prompt = f"""
 Answer ONLY from the context.
 
 If answer is unavailable,
-say:
+say exactly:
 
 Information not found in notes.
 
@@ -55,9 +92,41 @@ QUESTION:
 {question}
 """
 
-        return generate_response(
-    prompt
-)
+        answer = generate_response(
+            prompt
+        )
+
+        if (
+            search_mode == "🚀 Hybrid"
+            and "Information not found" in answer
+        ):
+
+            results = web_search(
+                question
+            )
+
+            web_context = "\n".join(
+                [
+                    f"{item['title']}\n{item['body']}"
+                    for item in results
+                ]
+            )
+
+            web_prompt = f"""
+Answer the question using the web search results.
+
+QUESTION:
+{question}
+
+WEB RESULTS:
+{web_context}
+"""
+
+            return generate_response(
+                web_prompt
+            )
+
+        return answer
 
     except Exception as e:
 
