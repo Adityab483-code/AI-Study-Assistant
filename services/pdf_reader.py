@@ -12,4 +12,5 @@ def extract_text(pdf_file):
         if page_text:
             text += page_text + "\n"
 
-    return text.strip()
+    clean_text=" ".join(text.split())
+    return clean_text   
