@@ -9,21 +9,21 @@ def generate_quiz(notes):
         prompt = f"""
 Create 10 MCQs from the notes.
 
-Format exactly like this:
+For EACH question use EXACTLY this format:
 
-Q1. Question?
+Q1. Question
 
 A) Option A
-
 B) Option B
-
 C) Option C
-
 D) Option D
 
 Answer: A
 
-Repeat for all questions.
+Explanation:
+Short explanation of why the answer is correct.
+
+Repeat for all 10 questions.
 
 NOTES:
 {notes[:15000]}

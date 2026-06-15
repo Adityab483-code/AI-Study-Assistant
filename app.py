@@ -1,10 +1,14 @@
 import streamlit as st
+import time
+import re
 
 from services.pdf_reader import extract_text
 from services.qa_engine import answer_question
 from services.quiz_generator import generate_quiz
 from services.summarizer import generate_summary
-
+from utils.quiz_parser import (
+    parse_quiz
+)
 st.set_page_config(
     page_title="AI Study Assistant",
     page_icon="🤖",
@@ -145,9 +149,17 @@ if uploaded_file:
                     notes
                 )
 
-            st.write(
-                summary
-            )
+            placeholder = st.empty()
+
+            typed_text = ""
+
+            for char in summary:
+                typed_text += char
+                placeholder.markdown(
+                    typed_text
+                )
+
+            time.sleep(0.001)
 
             st.download_button(
                 "📥 Download Summary",
@@ -173,12 +185,25 @@ if uploaded_file:
 
                     answer = answer_question(
                         uploaded_file,
-                        question,search_mode
+                        question,
+                        search_mode
                     )
 
-                st.write(
-                    answer
-                )
+                placeholder = st.empty()
+
+                typed_text = ""
+
+                import time
+
+                for word in answer.split():
+
+                    typed_text += word + " "
+
+                    placeholder.markdown(
+                        typed_text
+                    )
+
+                    time.sleep(0.03)
 
             else:
 
@@ -200,18 +225,91 @@ if uploaded_file:
                     notes
                 )
 
-            st.write(
-                quiz
+                st.session_state["quiz"] = quiz
+        if "quiz" in st.session_state:
+
+            questions = parse_quiz(
+                st.session_state["quiz"]
             )
 
-            st.download_button(
-                "📥 Download Quiz",
-                quiz,
-                file_name="quiz.txt"
-            )
+            if questions:
+
+                st.subheader(
+                    "🎯 Quiz"
+                )
+
+                answers = {}
+
+                for i, q in enumerate(questions):
+
+                    st.markdown(
+                        f"### Question {i+1}"
+                    )
+
+                    st.write(
+                        q["question"]
+                    )
+
+                    answers[i] = st.radio(
+                        "Choose your answer",
+                        q["options"],
+                        index=None,
+                        key=f"q_{i}"
+                    )
+
+                if st.button(
+                    "🚀 Submit Quiz"
+                ):
+
+                    score = 0
+
+                    for i, q in enumerate(
+                        questions
+                    ):
+
+                        selected = answers[i]
+
+                        correct = q["answer"]
+
+                        st.markdown(
+                            f"## Question {i+1}"
+                        )
+                        st.write("Selected =", selected)
+                        st.write("Correct =", correct)
+                        if (
+                            selected
+                            and selected.startswith(
+                                correct
+                            )
+                        ):
+
+                            score += 1
+
+                            st.success(
+                                "✅ Correct"
+                            )
+
+                        else:
+
+                            st.error(
+                                f"❌ Wrong | Correct Answer: {correct}"
+                            )
+
+                        st.info(
+                            q["explanation"]
+                        )
+
+                    st.success(
+                        f"🏆 Final Score: {score}/{len(questions)}"
+                    )
+
+                    st.download_button(
+                        "📥 Download Quiz",
+                        st.session_state["quiz"],
+                        file_name="quiz.txt"
+                    )
 
 else:
-
     st.info(
         "Upload a PDF to begin."
     )

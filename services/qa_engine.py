@@ -96,23 +96,26 @@ QUESTION:
             prompt
         )
 
-        if (
-            search_mode == "🚀 Hybrid"
-            and "Information not found" in answer
-        ):
+        if search_mode == "🚀 Hybrid":
 
-            results = web_search(
-                question
-            )
+            if (
+                "information not found" in answer.lower()
+                or "not available" in answer.lower()
+                or "not present" in answer.lower()
+            ):
 
-            web_context = "\n".join(
-                [
-                    f"{item['title']}\n{item['body']}"
-                    for item in results
-                ]
-            )
+                results = web_search(
+                    question
+                )
 
-            web_prompt = f"""
+                web_context = "\n".join(
+                    [
+                        f"{item['title']}\n{item['body']}"
+                        for item in results
+                    ]
+                )
+
+                web_prompt = f"""
 Answer the question using the web search results.
 
 QUESTION:
@@ -122,9 +125,9 @@ WEB RESULTS:
 {web_context}
 """
 
-            return generate_response(
-                web_prompt
-            )
+                return generate_response(
+                    web_prompt
+                )
 
         return answer
 
