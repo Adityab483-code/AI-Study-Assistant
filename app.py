@@ -27,6 +27,8 @@ if "score_history" not in st.session_state:
     st.session_state.score_history = []
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if "last_uploaded_filename" not in st.session_state:
+    st.session_state.last_uploaded_filename = None
 
 # ── Global CSS ─────────────────────────────────────────────────────────────────
 st.markdown("""
@@ -375,9 +377,12 @@ uploaded_file = st.file_uploader(
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# STATS ROW (always visible)
+# STATS ROW — placeholder filled at the end after all increments
 # ═══════════════════════════════════════════════════════════════════════════════
-st.markdown(f"""
+stats_placeholder = st.empty()
+
+def render_stats():
+    stats_placeholder.markdown(f"""
 <div class="stats-row">
     <div class="stat-card">
         <div class="stat-icon">📄</div>
@@ -423,7 +428,13 @@ if uploaded_file:
         st.error("❌ No text found in this PDF. Please try another file.")
         st.stop()
 
-    st.session_state.pdfs_uploaded += 1
+    # Only count a new upload if it's a different file than last time
+    if uploaded_file.name != st.session_state.last_uploaded_filename:
+        st.session_state.pdfs_uploaded += 1
+        st.session_state.last_uploaded_filename = uploaded_file.name
+        # Reset chat history when a new PDF is uploaded
+        st.session_state.messages = []
+
     st.success("✅ PDF uploaded successfully!")
 
     # Info strip
@@ -496,6 +507,7 @@ if uploaded_file:
         question = st.chat_input("Ask anything from your notes…")
         if question:
             st.session_state.questions_asked += 1
+            render_stats()
             st.session_state.messages.append({"role": "user", "content": question})
 
             with st.spinner("Searching notes…"):
@@ -507,12 +519,18 @@ if uploaded_file:
             with st.chat_message("assistant", avatar="🤖"):
                 placeholder = st.empty()
                 typed_text = ""
-                for word in answer.split():
-                    typed_text += word + " "
-                    placeholder.markdown(typed_text + "▌")
-                    time.sleep(0.03)
-                placeholder.markdown(typed_text)
-                st.session_state.messages.append({"role": "assistant", "content": typed_text})
+                # Split into tokens preserving whitespace/newlines so markdown structure survives
+                import re as _re
+                tokens = _re.split(r'(\s+)', answer)
+                for token in tokens:
+                    typed_text += token
+                    # Stream as plain text mid-flight to avoid broken markdown mid-render
+                    placeholder.text(typed_text + "▌")
+                    if token.strip():      # only delay on actual words, not whitespace
+                        time.sleep(0.03)
+                # Final render: proper markdown so headings / bold / bullets display correctly
+                placeholder.markdown(answer)
+                st.session_state.messages.append({"role": "assistant", "content": answer})
 
     # ── Tab 3: Quiz ───────────────────────────────────────────────────────────
     with tab3:
@@ -575,6 +593,7 @@ if uploaded_file:
                     st.session_state.avg_score = int(
                         sum(st.session_state.score_history) / len(st.session_state.score_history)
                     )
+                    render_stats()
 
                     st.markdown(f"""
 <div style="
@@ -612,6 +631,9 @@ else:
 </div>
 """, unsafe_allow_html=True)
 
+
+# ── Render stats with final up-to-date values ──────────────────────────────────
+render_stats()
 
 # ── Footer ─────────────────────────────────────────────────────────────────────
 st.markdown("---")
