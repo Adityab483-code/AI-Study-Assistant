@@ -1,23 +1,12 @@
-import sqlite3
+"""
+Run once to pre-create the database:
+    python init_db.py
 
-def initialize_database():
-    conn =sqlite3.connect("eduai_valut.db")
-    cursor=conn.cursor()
-    cursor.execute('''CREATE TABLE IF NOT EXISTS documents (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        filename TEXT NOT NULL,
-        Upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        processed_text TEXT NOT NULL
-    )''')       
-    cursor.execute('''
-                   CREATE TABLE IF NOT EXISTS response_cache(
-                   id INTEGER PRIMARY KEY AUTOINCREMENT,
-                   text_hash TEXT UNIQUE NOT NULL,
-                   request_type TEXT NOT NULL, -- 'summary' or 'quiz'
-                   cached_response TEXT NOT NULL)
-                   ''')
-    conn.commit()
-    conn.close()
-    print("database initialized! , eduai_valut.db is ready.")
+The app also calls initialize_database() on startup automatically,
+so this file is optional but useful for first-time setup.
+"""
+from utils.db_manager import initialize_database
+
 if __name__ == "__main__":
-    initialize_database()                              
+    initialize_database()
+    print("✅ Database initialized — eduai_valut.db is ready.")

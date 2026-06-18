@@ -9,19 +9,15 @@ load_dotenv()
 api_key = None
 
 try:
-    api_key = st.secrets["GEMINI_API_KEY"]
+    api_key = st.secrets.get("GEMINI_API_KEY")
 except Exception:
-    api_key = os.getenv("GEMINI_API_KEY")
+    pass
 
 if not api_key:
-    raise ValueError(
-        "GEMINI_API_KEY not found."
-    )
+    api_key = os.getenv("GEMINI_API_KEY")
 
-genai.configure(
-    api_key=api_key
-)
-
-model = genai.GenerativeModel(
-    "gemini-2.5-flash"
-)
+# ── FIX: don't raise at import time; let the app start and show a clear error ──
+model = None
+if api_key:
+    genai.configure(api_key=api_key)
+    model = genai.GenerativeModel("gemini-2.5-flash")
