@@ -1,2 +1,2 @@
 # AI-Study-Assistant
-our college summer project.
+innovation project(summer 2026)
